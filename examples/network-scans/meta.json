@@ -1,0 +1,11 @@
+{
+  "written_at": "2026-09-30T08:07:16.975343+00:00",
+  "raw": "tests/fixtures/network-scans.raw.html",
+  "counts": {
+    "headings": 33,
+    "citations": 286,
+    "sources_used": 47,
+    "sources_unused": 58,
+    "display_math": 12
+  }
+}
