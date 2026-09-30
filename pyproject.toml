@@ -17,6 +17,10 @@ dependencies = [
     "playwright>=1.45",
 ]
 
+[project.urls]
+Homepage = "https://github.com/cyberpeacemaker/inf-gemini-deep-research-crawler"
+Issues = "https://github.com/cyberpeacemaker/inf-gemini-deep-research-crawler/issues"
+
 [project.optional-dependencies]
 dev = ["pytest>=8"]
 
