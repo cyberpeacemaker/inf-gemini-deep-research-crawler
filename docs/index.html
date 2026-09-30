@@ -75,7 +75,7 @@ section.block .wrap>*+*{margin-top:32px}
 .choice{border:1px solid var(--line);background:var(--panel);text-align:left;border-radius:12px;transition:background .15s,border-color .15s}
 .choice:hover{border-color:var(--muted)}
 .choice[aria-pressed="true"],.choice[aria-selected="true"]{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
-.stages{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px;position:relative}
+.stages{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:16px;position:relative}
 .stage{min-height:120px;padding:20px;display:flex;flex-direction:column;gap:6px}
 .stage small{font-family:var(--mono);font-size:13px;opacity:.8}
 .stage strong{font-size:26px}
@@ -179,7 +179,7 @@ footer p{margin:0;max-width:820px}
   <div class="hero-copy">
     <div class="eyebrow">Unofficial exporter · Python 3.12+ · MIT</div>
     <h1>Deep Research reports, <em>out of the browser</em> and onto disk.</h1>
-    <p class="lede">Give it a Gemini Deep Research URL. It captures the report from your signed-in Chrome and writes lossless markdown for agents plus a self-contained offline HTML page for people, with every citation resolved to its real source.</p>
+    <p class="lede">Give it a Gemini Deep Research URL. It captures the report from your signed-in Chrome and writes lossless markdown for agents plus a self-contained offline HTML page for people, with every citation resolved to its real source. One index page links every report you have captured.</p>
     <div>
       <div class="cmd"><span aria-hidden="true" style="color:#8d93a0">$</span><span class="t" id="cmd-text">gemini-research fetch "https://gemini.google.com/app/&lt;id&gt;"</span><button type="button" id="copy">Copy</button></div>
       <p class="muted" style="margin:10px 0 0;font-size:14px">Run <code>gemini-research login</code> once first to sign in on a dedicated Chrome profile.</p>
@@ -201,7 +201,7 @@ footer p{margin:0;max-width:820px}
 <section class="block" id="pipeline">
 <div class="wrap">
   <div class="head-row">
-    <div><div class="eyebrow">01 · Pipeline</div><h2>Four stages, one command</h2></div>
+    <div><div class="eyebrow">01 · Pipeline</div><h2 id="stages-title"></h2></div>
     <button type="button" class="ghost" id="next-stage">Next stage →</button>
   </div>
   <div class="stages" id="stages"></div>
@@ -214,7 +214,7 @@ footer p{margin:0;max-width:820px}
 
 <section class="block" id="outputs">
 <div class="wrap">
-  <div class="head-row"><div><div class="eyebrow">02 · Outputs</div><h2>Four files per report</h2><p class="muted" style="margin:0;font-size:17px">Written to <code>out/&lt;conversation-id&gt;/</code></p></div></div>
+  <div class="head-row"><div><div class="eyebrow">02 · Outputs</div><h2>Four files per report, one index</h2><p class="muted" style="margin:0;font-size:17px">Reports go to <code>out/&lt;conversation-id&gt;/</code>; the index to <code>out/reports-index.html</code></p></div></div>
   <div class="outputs">
     <div class="tablist" role="tablist" aria-label="Output files" id="out-tabs"></div>
     <div role="tabpanel" id="out-panel" style="display:flex;flex-direction:column;gap:16px">
@@ -240,7 +240,7 @@ footer p{margin:0;max-width:820px}
 
 <section class="block" id="cli">
 <div class="wrap">
-  <div class="head-row"><div><div class="eyebrow">04 · CLI</div><h2>Three subcommands</h2></div></div>
+  <div class="head-row"><div><div class="eyebrow">04 · CLI</div><h2 id="cli-title"></h2></div></div>
   <div class="ctabs" role="tablist" aria-label="Subcommands" id="cmd-tabs"></div>
   <div class="cli" role="tabpanel">
     <div>
@@ -316,21 +316,29 @@ footer p{margin:0;max-width:820px}
      "title": "Render a self-contained page",
      "summary": "markdown-it-py turns report.md into one HTML file with KaTeX and styles inlined. It makes no network requests.",
      "points": ["Table of contents", "Clickable citations", "Light and dark themes", "KaTeX 0.16.11 fonts and scripts vendored in"],
-     "code": "report.md\n  -> markdown-it-py + mdit-py-plugins\n  -> + assets/report.css\n  -> + assets/katex/*\n  = report.html   (0 network requests)"}
+     "code": "report.md\n  -> markdown-it-py + mdit-py-plugins\n  -> + assets/report.css\n  -> + assets/katex/*\n  = report.html   (0 network requests)"},
+    {"name": "Index", "file": "index.py", "tag": "One page for all reports",
+     "title": "Link every report from one page",
+     "summary": "After each fetch, index.py scans the output root and rewrites reports-index.html: every report, newest first, linked to its report.html.",
+     "points": ["Readable title: the Gemini page title without \" - Google Gemini\"", "Falls back to the report title, then the conversation id", "Shows id, capture date, cited-source count and a link back to Gemini", "Broken folders are skipped with a warning; the page stays offline"],
+     "code": "out/\n  reports-index.html      <- rewritten after each fetch\n  <id-1>/report.html\n  <id-2>/report.html\n\n$ gemini-research index   # after convert, or for another root"}
   ],
   "outputs": [
-    {"name": "report.md", "for": "For agents",
+    {"name": "report.md", "for": "For agents", "path": "out/<id>/report.md",
      "desc": "Lossless markdown with front matter, headings, tables, fenced code, $ / $$ LaTeX, in-place [^N] citations and a ## Sources list with the real URLs.",
      "preview": "---\ntitle: \"Passive Network Detection of Port Scans and Host Sweeps: ...\"\npage_title: \"Detecting Network Scans via Telemetry - Google Gemini\"\ncaptured_at: \"2026-09-30T07:16:33.620Z\"\n---\n\n## Established detection methods\n\nThe Elastic Detection Engine implements two primary rules for\nnetwork discovery[^3].\n\n$$\n\\text{totalDestIPCount} \\ge 250 \\quad \\text{AND} \\quad \\text{TotalDestPortCount} \\ge 5\n$$"},
-    {"name": "report.html", "for": "For people",
+    {"name": "report.html", "for": "For people", "path": "out/<id>/report.html",
      "desc": "One self-contained offline page. KaTeX is inlined; the page has a table of contents, clickable citations and light/dark themes. Download it and open it locally.",
      "preview": "report.html\n\n  [x] table of contents from headings\n  [x] citations link to ## Sources entries\n  [x] math typeset by inlined KaTeX\n  [x] light / dark theme\n  [x] no external requests\n\nSample: examples/network-scans/report.html"},
-    {"name": "raw.html", "for": "For re-runs",
+    {"name": "raw.html", "for": "For re-runs", "path": "out/<id>/raw.html",
      "desc": "The captured report node plus the source lists. Feed it to convert to regenerate the markdown and HTML without a browser.",
      "preview": "<div id=\"extended-response-markdown-content\">\n  <h2>Established detection methods<\/h2>\n  <p>... network discovery<sup data-turn-source-index=\"3\"><\/sup><\/p>\n  ...\n<\/div>\n<deep-research-source-lists>\n  <div class=\"used-sources\">...<\/div>\n  <div class=\"unused-sources\">...<\/div>\n<\/deep-research-source-lists>"},
-    {"name": "meta.json", "for": "For bookkeeping",
+    {"name": "meta.json", "for": "For bookkeeping", "path": "out/<id>/meta.json",
      "desc": "written_at, the path to raw and counts. fetch also records source_url. Capture time lives in the markdown front matter as captured_at.",
-     "preview": "{\n  \"written_at\": \"2026-09-30T08:07:16.975343+00:00\",\n  \"raw\": \"tests/fixtures/network-scans.raw.html\",\n  \"counts\": {\n    \"headings\": 33,\n    \"citations\": 286,\n    \"sources_used\": 47,\n    \"sources_unused\": 58,\n    \"display_math\": 12\n  }\n}"}
+     "preview": "{\n  \"written_at\": \"2026-09-30T08:07:16.975343+00:00\",\n  \"raw\": \"tests/fixtures/network-scans.raw.html\",\n  \"counts\": {\n    \"headings\": 33,\n    \"citations\": 286,\n    \"sources_used\": 47,\n    \"sources_unused\": 58,\n    \"display_math\": 12\n  }\n}"},
+    {"name": "reports-index.html", "for": "For browsing", "path": "out/reports-index.html",
+     "desc": "One offline page per output root listing every report, newest first. fetch refreshes it; run index after convert. out/ is gitignored, so move or zip it whole to keep the links working.",
+     "preview": "Gemini Deep Research reports\n1 report\n\nDetecting Network Scans via Telemetry          -> <id>/report.html\n  Passive Network Detection of Port Scans and Host Sweeps: ...\n  <id> · 2026-09-30 · 47 sources · Gemini"}
   ],
   "rules": [
     {"name": "Citations",
@@ -360,7 +368,7 @@ footer p{margin:0;max-width:820px}
      "usage": "gemini-research login [--profile DIR] [--chrome PATH]",
      "flags": [{"k": "--profile DIR", "v": "Profile directory. Default %USERPROFILE%\\.gemini-research\\profile"}, {"k": "--chrome PATH", "v": "Path to Chrome. Auto-detected on Windows, macOS and /usr/bin/google-chrome"}]},
     {"name": "fetch", "exits": true,
-     "help": "Captures a Deep Research URL and writes raw.html, report.md, report.html and meta.json to out/<conversation-id>/.",
+     "help": "Captures a Deep Research URL, writes raw.html, report.md, report.html and meta.json to out/<conversation-id>/, then refreshes out/reports-index.html.",
      "usage": "gemini-research fetch URL [-o OUT] [--profile DIR]\n                     [--headless] [--raw-only]",
      "flags": [{"k": "URL", "v": "https://gemini.google.com/app/<conversation-id>"}, {"k": "-o, --out", "v": "Output root. Default out/"}, {"k": "--profile DIR", "v": "Signed-in Chrome profile"}, {"k": "--headless", "v": "Hide the browser window"}, {"k": "--raw-only", "v": "Only write raw.html, skip conversion"}]},
     {"name": "convert", "exits": false,
@@ -376,7 +384,7 @@ footer p{margin:0;max-width:820px}
     {"name": "test_extract.py", "count": 18, "checks": ["Heading, table, math, code, citation and source counts", "Every word of the visible report text appears in the markdown", "No UI text leaks into the output"]},
     {"name": "test_render.py", "count": 10, "checks": ["The HTML is fully offline, with KaTeX inlined", "Math nodes, tables and code render", "Title, meta and table of contents (citations stripped from TOC)", "Citations link to sources; external links open in a new tab", "Citations without a source list"]},
     {"name": "test_fetch.py", "count": 5, "checks": ["Conversation id parsing", "Ready pages are detected", "A redirect to /app means signed out", "A sign-in control means signed out", "A missing report is detected"]},
-    {"name": "test_docs.py", "count": 4, "checks": ["This page's sample counts match examples/network-scans/meta.json", "This page's test counts match the suite", "Every CLI flag shown here exists in cli.py", "This page loads no external scripts or stylesheets"]},
+    {"name": "test_docs.py", "count": 6, "checks": ["This page's sample counts match examples/network-scans/meta.json", "This page's test counts match the suite", "Every CLI flag shown here exists in cli.py", "Every subcommand in cli.py is listed here", "The report index is listed as an output and a stage", "This page loads no external scripts or stylesheets"]},
     {"name": "test_index.py", "count": 7, "checks": ["Entries sorted newest first, titled by page_title without the Gemini suffix", "Title falls back to title, then id", "Bad folders are skipped; missing meta.json or date is tolerated", "Empty root, HTML escaping and URL-encoded links", "The index is fully offline", "The index CLI writes reports-index.html"]},
     {"name": "test_cli.py", "count": 3, "checks": ["convert writes all outputs", "convert fails cleanly on a missing report", "fetch rejects a non-conversation URL"]}
   ]
@@ -449,6 +457,11 @@ footer p{margin:0;max-width:820px}
   $('src-bar').setAttribute('aria-label', c.sources_used + ' of ' + total + ' sources cited');
   requestAnimationFrame(function () { $('src-fill').style.width = (c.sources_used / total * 100).toFixed(1) + '%'; });
 
+  var WORDS = ['Zero', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine'];
+  function word(n) { return WORDS[n] || String(n); }
+  $('stages-title').textContent = word(D.stages.length) + ' stages, one command';
+  $('cli-title').textContent = word(D.cmds.length) + ' subcommands';
+
   // Pipeline
   var stage = 0;
   var pickStage = group($('stages'), D.stages, function (s, i) {
@@ -471,7 +484,7 @@ footer p{margin:0;max-width:820px}
   }, function (i) {
     var o = D.outputs[i];
     $('out-desc').textContent = o.desc;
-    $('out-path').textContent = 'out/<id>/' + o.name;
+    $('out-path').textContent = o.path;
     $('out-preview').textContent = o.preview;
   }, 'aria-selected')(0);
 
