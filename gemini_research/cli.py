@@ -8,6 +8,7 @@ from pathlib import Path
 
 from gemini_research.extract import extract
 from gemini_research.fetch import DEFAULT_PROFILE, FetchError, conversation_id, fetch, login, write_meta, write_raw
+from gemini_research.index import write_index
 from gemini_research.render import render
 
 
@@ -58,6 +59,9 @@ def main(argv: list[str] | None = None) -> int:
     p_conv.add_argument("raw", type=Path)
     p_conv.add_argument("-o", "--out", type=Path, help="output directory (default: next to RAW)")
 
+    p_index = sub.add_parser("index", help="write reports-index.html listing every report under ROOT")
+    p_index.add_argument("root", type=Path, nargs="?", default=Path("out"))
+
     args = parser.parse_args(argv)
     logging.basicConfig(level=logging.WARNING, format="%(levelname)s %(message)s")
 
@@ -73,6 +77,13 @@ def main(argv: list[str] | None = None) -> int:
             if not args.raw_only:
                 meta = convert(raw, out_dir, {"source_url": args.url})
                 print(f"markdown: {out_dir / 'report.md'}\nhtml: {out_dir / 'report.html'}\ncounts: {meta['counts']}")
+            try:
+                print(f"index: {write_index(args.out)[0]}")
+            except (ValueError, OSError) as e:
+                print(f"warning: index not updated: {e}", file=sys.stderr)
+        elif args.cmd == "index":
+            path, n = write_index(args.root)
+            print(f"index: {path} ({n} report{'' if n == 1 else 's'})")
         elif args.cmd == "convert":
             out_dir = args.out or args.raw.parent
             meta = convert(args.raw, out_dir)

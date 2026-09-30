@@ -7,6 +7,8 @@ Export a Gemini Deep Research report, given its URL, to:
 - `raw.html`: the captured report node plus the source lists, so the conversion can be rerun offline.
 - `meta.json`: `written_at`, the path to `raw`, and `counts`. `fetch` also records `source_url`. Capture time is `captured_at` in the markdown front matter.
 
+Project page: [docs/index.html](docs/index.html), a single offline file with the pipeline, outputs, DOM mapping, CLI, and tests.
+
 Sample output: [examples/network-scans/report.md](examples/network-scans/report.md) and [report.html](examples/network-scans/report.html). Download the HTML and open it locally to see it rendered.
 
 This is an unofficial exporter. Gemini's DOM can change and break the selectors below. Automating a signed-in Google session may conflict with Google's terms; use it on your own account.
@@ -38,7 +40,14 @@ This needs Google Chrome installed. Playwright drives it through `channel="chrom
 
 # Re-convert a saved capture offline
 .\.venv\Scripts\python.exe -m gemini_research convert out\<conversation-id>\raw.html
+
+# Rebuild the report index (fetch does this automatically)
+.\.venv\Scripts\python.exe -m gemini_research index
 ```
+
+### Report index
+
+`out\reports-index.html` lists every report under `out\`, newest first. Each entry shows a readable title (the Gemini page title without the " - Google Gemini" suffix) that links to its `report.html`, followed by the full report title, the conversation id, the capture date, the number of cited sources and a link to the Gemini conversation. `fetch` refreshes it after each capture. After `convert`, run `index` yourself. Pass a path to index a different output root. `out\` is gitignored, so the index and the reports stay on your machine; move or zip `out\` as a whole to keep the links working.
 
 `fetch` exit codes:
 
